@@ -1,0 +1,47 @@
+MODEL_MANIFEST = {
+    "demucs": {
+        "type": "source_separation",
+        "module": "demucs",
+        "binary": "",
+        "purpose": "Separate voice from noise/background audio",
+        "huggingface": "facebook/demucs",
+    },
+    "pyannote": {
+        "type": "speaker_diarization",
+        "module": "pyannote.audio",
+        "binary": "",
+        "purpose": "Detect speaker segments and dialogue timing",
+        "huggingface": "pyannote/speaker-diarization",
+    },
+    "whisper": {
+        "type": "transcription",
+        "module": "whisper",
+        "binary": "",
+        "purpose": "Automatic speech recognition",
+        "huggingface": "openai/whisper",
+    },
+    "ollama": {
+        "type": "script_adaptation",
+        "module": "ollama",
+        "binary": "ollama",
+        "purpose": "Bangla emotional dialogue rewrite and script adaptation",
+        "huggingface": "local-llm",
+    },
+    "xtts": {
+        "type": "voice_synthesis",
+        "module": "TTS",
+        "binary": "",
+        "purpose": "Voice cloning and text-to-speech generation",
+        "huggingface": "coqui/XTTS-v2",
+    },
+    "wav2lip": {
+        "type": "lip_sync",
+        "module": "wav2lip",
+        "binary": "",
+        "purpose": "Align synthesized audio with mouth movement",
+        "huggingface": "wav2lip",
+    },
+}
+
+__all__ = ["MODEL_MANIFEST"]
+

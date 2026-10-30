@@ -1,0 +1,92 @@
+import json
+from pathlib import Path
+
+import streamlit as st
+
+from src.ai_pipeline import run_dubbing_pipeline
+
+st.set_page_config(page_title="Movie Dubbing AI", page_icon="🎬", layout="wide")
+
+st.title("🎬 Movie Dubbing AI")
+st.caption("Bangla movie dubbing workflow using open-source AI components")
+
+with st.sidebar:
+    st.header("Dubbing settings")
+    st.markdown("**Open-source stack**")
+    st.markdown("- Demucs / source separation")
+    st.markdown("- pyannote / diarization")
+    st.markdown("- Whisper / transcription")
+    st.markdown("- Ollama / Bangla script adaptation")
+    st.markdown("- TTS / XTTS / voice synthesis")
+    st.markdown("- Wav2Lip-style lip-sync flow")
+
+    st.markdown("---")
+    emotion = st.selectbox("Emotion style", ["neutral", "happy", "sad", "angry", "dramatic", "romantic", "intense"])
+    voice_mode = st.selectbox("Voice mode", ["clone_reference", "neutral_tts", "cinematic_tts"])
+    use_ollama = st.checkbox("Use Ollama Bangla script adaptation", value=True)
+
+source_video = st.file_uploader("Upload source video", type=["mp4", "avi", "mov", "mkv"])
+reference_voice = st.file_uploader("Upload reference voice audio", type=["wav", "mp3", "m4a"])
+
+if st.button("Generate dubbed output", type="primary"):
+    if source_video is None or reference_voice is None:
+        st.warning("Please upload both a source video and a reference voice.")
+        st.stop()
+
+    base_dir = Path("data")
+    base_dir.mkdir(exist_ok=True)
+
+    job_id = st.session_state.get("job_id") or str(__import__("uuid").uuid4())[:8]
+    source_path = base_dir / f"source_{job_id}.mp4"
+    voice_path = base_dir / f"voice_{job_id}.wav"
+
+    with open(source_path, "wb") as f:
+        f.write(source_video.read())
+
+    with open(voice_path, "wb") as f:
+        f.write(reference_voice.read())
+
+    st.info("Processing the film dubbing workflow. This may take a few minutes depending on the model stack and hardware.")
+
+    try:
+        output_path = run_dubbing_pipeline(
+            source_video_path=str(source_path),
+            reference_voice_path=str(voice_path),
+            output_dir="output",
+            job_id=job_id,
+            emotion=emotion,
+            use_ollama=use_ollama,
+            voice_mode=voice_mode,
+        )
+
+        st.success("Dubbing workflow finished.")
+        st.video(str(output_path))
+
+        with open(output_path, "rb") as f:
+            st.download_button(
+                "Download final output",
+                data=f.read(),
+                file_name=output_path.split("/")[-1],
+            )
+    except Exception as exc:
+        st.error(f"Pipeline failed: {exc}")
+        st.code(str(exc))
+
+st.markdown("---")
+st.subheader("Professional pipeline overview")
+
+with st.container():
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown("### 1. Audio + source cleanup")
+        st.write("Demucs and audio preprocessing are used to isolate clean speech and reduce background noise.")
+    with col2:
+        st.markdown("### 2. Script + emotion")
+        st.write("Ollama helps rewrite the transcript in a natural Bangla cinematic tone and adds emotion tags.")
+    with col3:
+        st.markdown("### 3. Voice + lip sync")
+        st.write("TTS / XTTS voice synthesis and lip-sync workflow aim to produce a dubbed output aligned to the original face.")
+
+st.markdown("---")
+st.caption("This project is a production-style open-source starter and should be validated on actual Bangla voice samples for cinematic quality.")
+

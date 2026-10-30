@@ -1,0 +1,146 @@
+# Movie Dubbing AI
+
+A professional starter project for Bangla movie dubbing using open-source AI components.
+
+This repository is built for local, Colab, and cloud testing workflows. It combines:
+- Demucs for source separation
+- pyannote for speaker diarization
+- Whisper for transcription
+- Ollama for Bangla script and emotion adaptation
+- Coqui TTS / XTTS for voice synthesis
+- lip-sync pipeline scaffolding for final dubbing output
+- Streamlit UI for easy usage
+
+The project is designed as a realistic open-source dubbing pipeline foundation for Bangla voice conversion and cinematic localization.
+
+## Included stack
+
+- Speech separation: Demucs
+- Speaker diarization: pyannote.audio
+- Transcription: Whisper
+- Translation / script adaptation: Ollama + local LLM
+- Voice synthesis: Coqui TTS / XTTS
+- Final alignment: Wav2Lip / lip-sync workflow
+- App UI: Streamlit
+
+## Open-source models and libraries used
+
+Recommended Hugging Face / open-source integrations:
+- `suno/bark` (creative voice experiment)
+- `coqui/XTTS-v2` (voice cloning)
+- `openai/whisper` (ASR)
+- `pyannote/speaker-diarization`
+- `facebook/demucs` / `htdemucs` variants
+- community Bangla fine-tuned TTS models (to be evaluated)
+- Wav2Lip / Synctalk / SadTalker style lip-sync pipelines
+
+## Project structure
+
+```text
+movie-dubbing-ai/
+├─ app.py
+├─ requirements.txt
+├─ README.md
+├─ .gitignore
+├─ data/
+│  └─ .gitkeep
+├─ output/
+│  └─ .gitkeep
+├─ scripts/
+│  ├─ install_colab.sh
+│  └─ setup_ollama.sh
+├─ src/
+│  ├─ __init__.py
+│  ├─ ai_pipeline.py
+│  ├─ ollama_client.py
+│  ├─ model_manifest.py
+│  └─ utils.py
+└─ notebooks/
+   └─ colab_movie_dubbing.ipynb
+```
+
+## Quick start
+
+### 1) Clone
+
+```bash
+git clone https://github.com/atik4595-call/movie-dubbing-ai.git
+cd movie-dubbing-ai
+```
+
+### 2) Create a virtual environment
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -U pip
+pip install -r requirements.txt
+```
+
+### 3) Run the app
+
+```bash
+streamlit run app.py
+```
+
+### 4) Upload files in the UI
+
+- Source video
+- Reference voice
+- Emotion (optional)
+- Language: Bangla
+
+## Ollama setup (recommended)
+
+Install and run Ollama locally:
+
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull llama3.1
+```
+
+Then use the script adaptation step for Bangla dubbing text and emotion tags.
+
+## Colab note
+
+This project is designed to be Colab-friendly. The repository includes a setup flow for GPU runtime and package installation, but actual model quality depends on:
+- GPU availability
+- package compatibility
+- model download speed
+- dataset quality
+- Bangla voice fine-tuning quality
+
+## Professional dubbing pipeline (what this repo attempts)
+
+1. Extract audio from source video
+2. Separate vocals/noise using Demucs
+3. Identify speaker segments with pyannote
+4. Transcribe using Whisper
+5. Rewrite the dialogue in Bangla with emotion-aware wording using Ollama
+6. Generate or adapt voice using TTS / XTTS / voice-cloning models
+7. Estimate timing and align voices for lip-sync
+8. Produce final dub-ready video output
+
+## Important reality check
+
+This repository is a professional starter framework, not a magically finished movie-dubbing product.
+For best Bangla cinematic quality, you still need:
+- a clean Bangla voice dataset
+- fine-tuned TTS on your target voice
+- controlled emotion styling
+- a lip-sync model tuned for the target source face
+- a real validation workflow for output quality
+
+## License
+
+MIT
+
+## Future upgrades planned
+
+- Bangla speaker adaptation module
+- Fine-tuned TTS builder
+- Emotion style tags
+- Better lip-sync renderer
+- Batch dubbing mode
+- Face tracking and scene-aware timing
+- Local model manager for Hugging Face downloads

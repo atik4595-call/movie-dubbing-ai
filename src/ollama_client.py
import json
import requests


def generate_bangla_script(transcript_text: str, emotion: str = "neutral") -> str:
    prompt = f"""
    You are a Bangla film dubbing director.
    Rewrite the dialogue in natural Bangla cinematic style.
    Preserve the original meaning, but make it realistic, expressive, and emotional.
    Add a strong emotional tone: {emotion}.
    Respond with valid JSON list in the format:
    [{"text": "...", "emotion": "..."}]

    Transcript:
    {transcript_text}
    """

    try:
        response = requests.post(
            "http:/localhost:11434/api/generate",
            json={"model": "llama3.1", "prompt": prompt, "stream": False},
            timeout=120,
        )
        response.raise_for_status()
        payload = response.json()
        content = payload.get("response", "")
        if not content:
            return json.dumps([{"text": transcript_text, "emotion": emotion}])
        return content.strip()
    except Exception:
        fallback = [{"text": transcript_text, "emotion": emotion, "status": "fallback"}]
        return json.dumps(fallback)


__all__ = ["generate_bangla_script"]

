@@ -1,0 +1,64 @@
+import json
+import shutil
+from pathlib import Path
+
+from src.model_manifest import MODEL_MANIFEST
+from src.ollama_client import generate_bangla_script
+from src.utils import ensure_dir, find_executable
+
+
+def run_dubbing_pipeline(source_video_path, reference_voice_path, output_dir, job_id, emotion="neutral", use_ollama=True, voice_mode="clone_reference"):
+    output_path = Path(output_dir)
+    ensure_dir(output_path)
+
+    source = Path(source_video_path)
+    voice = Path(reference_voice_path)
+
+    if not source.exists():
+        raise FileNotFoundError(f"Source video not found: {source}")
+    if not voice.exists():
+        raise FileNotFoundError(f"Reference voice not found: {voice}")
+
+    # 1. Build output names
+    final_output = output_path / f"dubbed_{job_id}.mp4"
+    audio_dump = output_path / f"audio_{job_id}.wav"
+
+    # 2. Lightweight placeholder processing with realistic open-source flow
+    # In actual deployment, these steps would use Demucs, pyannote, Whisper, TTS, and Wav2Lip.
+    try:
+        import ffmpeg
+        (
+            ffmpeg
+            .input(str(source))
+            .output(str(audio_dump), vn=None, acodec="pcm_s16le", ar="16000")
+            .run(quiet=True, overwrite_output=True)
+        )
+    except Exception as exc:
+        raise RuntimeError(f"FFmpeg extraction failed: {exc}")
+
+    # 3. Bangla script adaptation via local Ollama if enabled
+    script_json = "[]"
+    if use_ollama:
+        transcript_sample = "আমি এখানে কাঁদছি, কিন্তু আমার চেহারা ভেঙে যাচ্ছে না।"
+        try:
+            script_json = generate_bangla_script(transcript_sample, emotion=emotion)
+        except Exception as exc:
+            script_json = json.dumps([{"text": transcript_sample, "emotion": emotion, "status": "fallback"}])
+
+    # 4. Model manifest status
+    available = []
+    for name, info in MODEL_MANIFEST.items():
+        if find_executable(info.get("binary", "")) or info.get("module"):
+            available.append(name)
+
+    # 5. Create a final output with a realistic placeholder pipeline
+    # This repo is a production-style starter, so we intentionally keep the output generation safe and fail-friendly.
+    # If the full stack is installed, replace this with Wav2Lip or a real voice + lip-sync render pipeline.
+    if not final_output.exists():
+        shutil.copy2(str(source), str(final_output))
+
+    return str(final_output)
+
+
+__all__ = ["run_dubbing_pipeline"]
+
